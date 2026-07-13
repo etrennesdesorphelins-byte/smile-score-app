@@ -58,6 +58,74 @@ body {
   font-weight: 600;
 }
 
+.countdown-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.countdown-number {
+  font-size: 96px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.capture-indicator {
+  margin-top: 12px;
+  color: #d33;
+  font-weight: 700;
+}
+
+.capture-success {
+  margin-top: 12px;
+  font-weight: 600;
+  color: #2f7d3c;
+}
+
+.capture-controls {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.capture-controls button {
+  padding: 10px 20px;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: none;
+  background: #2f7d3c;
+  color: #fff;
+  cursor: pointer;
+}
+
+.capture-controls button:disabled {
+  background: #999;
+  cursor: not-allowed;
+}
+
+.capture-review {
+  margin-top: 16px;
+}
+
+.capture-review-image {
+  max-width: 320px;
+  width: 100%;
+  border-radius: 8px;
+}
+
+.capture-done-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 12px;
+}
+
 .camera-video,
 .landmark-canvas {
   position: absolute;

@@ -9,6 +9,9 @@ export default function HomePage() {
         <Link to="/landmark" className="home-menu-button">
           顔ランドマークを見る
         </Link>
+        <Link to="/smile-capture" className="home-menu-button">
+          笑顔を採点する
+        </Link>
       </div>
     </div>
   );

@@ -63,7 +63,14 @@ const LandmarkCanvas = forwardRef<HTMLCanvasElement, LandmarkCanvasProps>(
 
           const result = detectFace(landmarker, video, timestampMs);
           drawResult(canvas, result);
-          onFrameRef.current?.(result);
+          // A consumer's onFrame callback must never be able to kill this
+          // loop: an uncaught exception here would skip the
+          // requestAnimationFrame call below and stop detection silently.
+          try {
+            onFrameRef.current?.(result);
+          } catch (err) {
+            console.error(err);
+          }
         }
 
         rafId = requestAnimationFrame(() => loop(landmarker));
