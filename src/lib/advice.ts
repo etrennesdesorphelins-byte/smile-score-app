@@ -1,6 +1,9 @@
 import type { SmileScoreResult } from "./scoring";
 
-type ScoreItemKey = Exclude<keyof SmileScoreResult, "total">;
+type ScoreItemKey = Exclude<
+  keyof SmileScoreResult,
+  "total" | "representativeLandmarks"
+>;
 
 const MAX_SCORES: Record<ScoreItemKey, number> = {
   mouthCorner: 25,

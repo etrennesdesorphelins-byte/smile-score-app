@@ -261,3 +261,84 @@ body {
 .advice-box p:last-child {
   margin-bottom: 0;
 }
+
+.result-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.result-caption {
+  margin-top: 8px;
+  color: #666;
+  font-size: 0.85rem;
+}
+
+.consent-box {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.consent-note {
+  margin-top: 8px;
+  color: #666;
+  font-size: 0.85rem;
+}
+
+.ranking-list {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ranking-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+}
+
+.ranking-rank {
+  font-weight: 700;
+  min-width: 3em;
+}
+
+.ranking-image {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.ranking-score {
+  font-weight: 600;
+}
+
+.ranking-date {
+  color: #666;
+  font-size: 0.8rem;
+  flex: 1;
+}
+
+.ranking-delete-confirm {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.ranking-delete-confirm span {
+  color: #9b2c2c;
+  font-size: 0.85rem;
+  font-weight: 700;
+}

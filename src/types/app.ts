@@ -1,4 +1,11 @@
 import type { Point3D } from "../lib/landmarks";
+import type { SmileScoreResult } from "../lib/scoring";
+
+export type ResultLocationState = {
+  scoreResult: SmileScoreResult;
+  adviceMessages: string[];
+  imageDataUrl: string;
+};
 
 export type CaptureFrame = {
   timestampMs: number;

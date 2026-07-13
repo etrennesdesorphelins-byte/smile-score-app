@@ -4,7 +4,12 @@ type ScoreBreakdownProps = {
   scores: SmileScoreResult;
 };
 
-const ITEMS: { key: Exclude<keyof SmileScoreResult, "total">; label: string; max: number }[] = [
+type ScoreItemKey = Exclude<
+  keyof SmileScoreResult,
+  "total" | "representativeLandmarks"
+>;
+
+const ITEMS: { key: ScoreItemKey; label: string; max: number }[] = [
   { key: "mouthCorner", label: "口角挙上", max: 25 },
   { key: "mouthWidth", label: "口幅拡大", max: 20 },
   { key: "cheekEye", label: "頬・目周囲", max: 25 },

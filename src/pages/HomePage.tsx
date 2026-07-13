@@ -12,6 +12,12 @@ export default function HomePage() {
         <Link to="/smile-capture" className="home-menu-button">
           笑顔を採点する
         </Link>
+        <Link to="/ranking" className="home-menu-button">
+          ランキングを見る
+        </Link>
+        <Link to="/admin" className="home-menu-button">
+          管理メニュー
+        </Link>
       </div>
     </div>
   );

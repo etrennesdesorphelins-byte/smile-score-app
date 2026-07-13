@@ -1,7 +1,9 @@
 import {
+  DrawingUtils,
   FaceLandmarker,
   FilesetResolver,
   type FaceLandmarkerResult,
+  type NormalizedLandmark,
 } from "@mediapipe/tasks-vision";
 
 const WASM_BASE_URL = "/mediapipe/wasm";
@@ -55,4 +57,37 @@ export async function disposeFaceLandmarker(): Promise<void> {
   faceLandmarkerPromise = null;
   const landmarker = await pending;
   landmarker.close();
+}
+
+// Shared face mesh drawing style, used both for the live overlay
+// (LandmarkCanvas) and for annotating a still photo (ResultPage).
+export function drawFaceMesh(
+  ctx: CanvasRenderingContext2D,
+  landmarks: NormalizedLandmark[]
+): void {
+  const drawingUtils = new DrawingUtils(ctx);
+  drawingUtils.drawConnectors(
+    landmarks,
+    FaceLandmarker.FACE_LANDMARKS_TESSELATION,
+    { color: "#C0C0C070", lineWidth: 1 }
+  );
+  drawingUtils.drawConnectors(
+    landmarks,
+    FaceLandmarker.FACE_LANDMARKS_FACE_OVAL,
+    { color: "#30FF30", lineWidth: 2 }
+  );
+  drawingUtils.drawConnectors(
+    landmarks,
+    FaceLandmarker.FACE_LANDMARKS_LEFT_EYE,
+    { color: "#30FF30", lineWidth: 1.5 }
+  );
+  drawingUtils.drawConnectors(
+    landmarks,
+    FaceLandmarker.FACE_LANDMARKS_RIGHT_EYE,
+    { color: "#30FF30", lineWidth: 1.5 }
+  );
+  drawingUtils.drawConnectors(landmarks, FaceLandmarker.FACE_LANDMARKS_LIPS, {
+    color: "#E0E000",
+    lineWidth: 1.5,
+  });
 }

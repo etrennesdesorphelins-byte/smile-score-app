@@ -6,6 +6,7 @@ import {
   getMouthCornerPoints,
   type Point3D,
 } from "./landmarks";
+import { loadImageElement } from "./imageUtils";
 import type { CaptureFrame, CaptureSession } from "../types/app";
 
 export type SmileScoreResult = {
@@ -16,6 +17,7 @@ export type SmileScoreResult = {
   symmetry: number;
   stability: number;
   teeth: number;
+  representativeLandmarks: Point3D[];
 };
 
 export type BaselineFeatures = {
@@ -211,15 +213,6 @@ function computeStabilityScore(
   return detectionComponent + guideComponent + variationComponent;
 }
 
-async function loadImage(dataUrl: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error("画像の読み込みに失敗しました"));
-    img.src = dataUrl;
-  });
-}
-
 // Approximates the "upper interior mouth" region as the top half of the
 // lips' landmark bounding box, rather than clipping a precise polygon. Given
 // this score is explicitly a low-weight, best-effort supplementary signal
@@ -255,7 +248,7 @@ export async function computeTeethScore(
   landmarks: Point3D[]
 ): Promise<number> {
   const mouthBox = getMouthBoxMetrics(landmarks);
-  const img = await loadImage(imageDataUrl);
+  const img = await loadImageElement(imageDataUrl);
 
   const width = img.naturalWidth;
   const height = img.naturalHeight;
@@ -350,5 +343,6 @@ export async function computeSmileScore(
     symmetry,
     stability: stabilityScore,
     teeth: teethScore,
+    representativeLandmarks: best.frame.landmarks,
   };
 }

@@ -1,5 +1,4 @@
 import {
-  DrawingUtils,
   FaceLandmarker,
   type FaceLandmarkerResult,
 } from "@mediapipe/tasks-vision";
@@ -13,6 +12,7 @@ import {
 import {
   detectFace,
   disposeFaceLandmarker,
+  drawFaceMesh,
   initializeFaceLandmarker,
 } from "../lib/mediapipe";
 
@@ -106,32 +106,8 @@ function drawResult(canvas: HTMLCanvasElement, result: FaceLandmarkerResult) {
   ctx.save();
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  const drawingUtils = new DrawingUtils(ctx);
   for (const landmarks of result.faceLandmarks) {
-    drawingUtils.drawConnectors(
-      landmarks,
-      FaceLandmarker.FACE_LANDMARKS_TESSELATION,
-      { color: "#C0C0C070", lineWidth: 1 }
-    );
-    drawingUtils.drawConnectors(
-      landmarks,
-      FaceLandmarker.FACE_LANDMARKS_FACE_OVAL,
-      { color: "#30FF30", lineWidth: 2 }
-    );
-    drawingUtils.drawConnectors(
-      landmarks,
-      FaceLandmarker.FACE_LANDMARKS_LEFT_EYE,
-      { color: "#30FF30", lineWidth: 1.5 }
-    );
-    drawingUtils.drawConnectors(
-      landmarks,
-      FaceLandmarker.FACE_LANDMARKS_RIGHT_EYE,
-      { color: "#30FF30", lineWidth: 1.5 }
-    );
-    drawingUtils.drawConnectors(landmarks, FaceLandmarker.FACE_LANDMARKS_LIPS, {
-      color: "#E0E000",
-      lineWidth: 1.5,
-    });
+    drawFaceMesh(ctx, landmarks);
   }
 
   ctx.restore();
