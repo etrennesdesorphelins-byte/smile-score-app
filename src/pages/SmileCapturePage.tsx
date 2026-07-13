@@ -359,19 +359,26 @@ export default function SmileCapturePage() {
         <p className="capture-indicator">● 基準顔を撮影中</p>
       )}
 
-      {stage === "baseline-done" && (
-        <div className="capture-controls">
+      {stage === "baseline-done" && baselineCapture && (
+        <div className="capture-review">
           <p className="capture-success">基準顔の撮影に成功しました</p>
-          <button type="button" onClick={retakeBaseline}>
-            基準顔を撮り直す
-          </button>
-          <button
-            type="button"
-            onClick={requestSmileCapture}
-            disabled={!faceGuideStatus?.ok}
-          >
-            笑顔を採点
-          </button>
+          <img
+            src={baselineCapture.representativeImageDataUrl}
+            alt="撮影した基準顔"
+            className="capture-review-image"
+          />
+          <div className="capture-controls">
+            <button type="button" onClick={retakeBaseline}>
+              基準顔を撮り直す
+            </button>
+            <button
+              type="button"
+              onClick={requestSmileCapture}
+              disabled={!faceGuideStatus?.ok}
+            >
+              笑顔を採点
+            </button>
+          </div>
         </div>
       )}
 
