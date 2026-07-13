@@ -6,8 +6,11 @@ import {
   type NormalizedLandmark,
 } from "@mediapipe/tasks-vision";
 
-const WASM_BASE_URL = "/mediapipe/wasm";
-const MODEL_ASSET_PATH = "/mediapipe/face_landmarker.task";
+// Built with import.meta.env.BASE_URL (Vite's configured `base`) rather than
+// hardcoded root-relative paths, so these resolve correctly both locally and
+// when deployed under a GitHub Pages project subpath.
+const WASM_BASE_URL = `${import.meta.env.BASE_URL}mediapipe/wasm`;
+const MODEL_ASSET_PATH = `${import.meta.env.BASE_URL}mediapipe/face_landmarker.task`;
 
 let faceLandmarkerPromise: Promise<FaceLandmarker> | null = null;
 
