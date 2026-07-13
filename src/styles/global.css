@@ -93,17 +93,20 @@ body {
   align-items: center;
 }
 
-.capture-controls button {
-  padding: 10px 20px;
-  font-size: 1rem;
+.capture-controls button,
+.recording-controls button {
+  padding: 14px 28px;
+  font-size: 1.1rem;
   border-radius: 8px;
   border: none;
   background: #2f7d3c;
   color: #fff;
   cursor: pointer;
+  min-width: 10em;
 }
 
-.capture-controls button:disabled {
+.capture-controls button:disabled,
+.recording-controls button:disabled {
   background: #999;
   cursor: not-allowed;
 }
@@ -160,12 +163,14 @@ body {
 
 .home-menu-button {
   display: inline-block;
-  padding: 12px 24px;
+  padding: 14px 28px;
   border-radius: 8px;
   background: #2f7d3c;
   color: #fff;
   text-decoration: none;
   font-weight: 500;
+  font-size: 1.1rem;
+  min-width: 10em;
 }
 
 .recording-indicator {
@@ -182,21 +187,6 @@ body {
 
 .recording-controls {
   margin-top: 16px;
-}
-
-.recording-controls button {
-  padding: 10px 20px;
-  font-size: 1rem;
-  border-radius: 8px;
-  border: none;
-  background: #2f7d3c;
-  color: #fff;
-  cursor: pointer;
-}
-
-.recording-controls button:disabled {
-  background: #999;
-  cursor: not-allowed;
 }
 
 .download-links {
@@ -307,6 +297,16 @@ body {
   border-radius: 8px;
 }
 
+.ranking-item button {
+  padding: 8px 16px;
+  font-size: 0.95rem;
+  border-radius: 6px;
+  border: none;
+  background: #2f7d3c;
+  color: #fff;
+  cursor: pointer;
+}
+
 .ranking-rank {
   font-weight: 700;
   min-width: 3em;
@@ -341,4 +341,39 @@ body {
   color: #9b2c2c;
   font-size: 0.85rem;
   font-weight: 700;
+}
+
+.about-section {
+  margin-top: 24px;
+  text-align: left;
+}
+
+.about-section h2 {
+  font-size: 1.1rem;
+  border-bottom: 2px solid #2f7d3c;
+  padding-bottom: 4px;
+  margin-bottom: 8px;
+}
+
+.about-section p {
+  line-height: 1.7;
+}
+
+.about-list {
+  margin: 0;
+  padding-left: 1.5em;
+  line-height: 1.8;
+}
+
+.about-notice {
+  padding: 16px;
+  background: #fff8e6;
+  border: 1px solid #e6c866;
+  border-radius: 8px;
+}
+
+.about-notice p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #6b5a1e;
 }

@@ -15,6 +15,9 @@ export default function HomePage() {
         <Link to="/ranking" className="home-menu-button">
           ランキングを見る
         </Link>
+        <Link to="/about" className="home-menu-button">
+          概要説明
+        </Link>
         <Link to="/admin" className="home-menu-button">
           管理メニュー
         </Link>

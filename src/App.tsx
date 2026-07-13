@@ -1,4 +1,5 @@
 import { HashRouter, Route, Routes } from "react-router-dom";
+import AboutPage from "./pages/AboutPage";
 import AdminPage from "./pages/AdminPage";
 import HomePage from "./pages/HomePage";
 import LandmarkPage from "./pages/LandmarkPage";
@@ -15,6 +16,7 @@ function App() {
         <Route path="/smile-capture" element={<SmileCapturePage />} />
         <Route path="/result" element={<ResultPage />} />
         <Route path="/ranking" element={<RankingPage />} />
+        <Route path="/about" element={<AboutPage />} />
         <Route path="/admin" element={<AdminPage />} />
       </Routes>
     </HashRouter>
