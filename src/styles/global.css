@@ -48,3 +48,64 @@ body {
 .landmark-status-error {
   color: #d33;
 }
+
+.home-menu {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+.home-menu-button {
+  display: inline-block;
+  padding: 12px 24px;
+  border-radius: 8px;
+  background: #2f7d3c;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.recording-indicator {
+  margin-top: 12px;
+  color: #d33;
+  font-weight: 700;
+}
+
+.recording-error {
+  margin-top: 12px;
+  color: #d33;
+  font-weight: 500;
+}
+
+.recording-controls {
+  margin-top: 16px;
+}
+
+.recording-controls button {
+  padding: 10px 20px;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: none;
+  background: #2f7d3c;
+  color: #fff;
+  cursor: pointer;
+}
+
+.recording-controls button:disabled {
+  background: #999;
+  cursor: not-allowed;
+}
+
+.download-links {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.back-link {
+  margin-top: 24px;
+}
