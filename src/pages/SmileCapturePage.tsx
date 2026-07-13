@@ -10,7 +10,17 @@ import FaceGuideOverlay, {
 import LandmarkCanvas, {
   type LandmarkDetectionStatus,
 } from "../components/LandmarkCanvas";
+import ScoreBreakdown from "../components/ScoreBreakdown";
+import { generateAdvice } from "../lib/advice";
 import { captureMirroredFrame } from "../lib/imageUtils";
+import type { Point3D } from "../lib/landmarks";
+import {
+  computeBaselineFeatures,
+  computeFrameSmileMetrics,
+  computeSmileScore,
+  type BaselineFeatures,
+  type SmileScoreResult,
+} from "../lib/scoring";
 import type { CaptureFrame, CaptureSession } from "../types/app";
 
 type CaptureStage =
@@ -21,6 +31,7 @@ type CaptureStage =
   | "smile-countdown"
   | "smile-capturing"
   | "smile-review"
+  | "scoring"
   | "done";
 
 const COUNTDOWN_SECONDS = 3;
@@ -39,6 +50,12 @@ export default function SmileCapturePage() {
   // representative image reflects a well-positioned moment without keeping
   // every frame's image (each capture is an expensive, sizeable data URL).
   const lastValidImageRef = useRef<string | null>(null);
+  // During smile capture only: the baseline features (computed once, right
+  // before the countdown finishes) and the best provisional score seen so
+  // far, so the kept image is the highest-scoring frame rather than simply
+  // the last valid one.
+  const baselineFeaturesRef = useRef<BaselineFeatures | null>(null);
+  const bestProvisionalScoreRef = useRef(-Infinity);
 
   const [detectionStatus, setDetectionStatus] =
     useState<LandmarkDetectionStatus>("loading");
@@ -53,6 +70,10 @@ export default function SmileCapturePage() {
   const [baselineAttempt, setBaselineAttempt] = useState(0);
   const [smileAttempt, setSmileAttempt] = useState(0);
   const [captureError, setCaptureError] = useState<string | null>(null);
+  const [scoreResult, setScoreResult] = useState<SmileScoreResult | null>(
+    null
+  );
+  const [adviceMessages, setAdviceMessages] = useState<string[]>([]);
 
   useEffect(() => {
     return () => {
@@ -79,6 +100,17 @@ export default function SmileCapturePage() {
   function handleFaceGuideStatusChange(status: FaceGuideStatus) {
     faceGuideStatusRef.current = status;
     setFaceGuideStatus(status);
+  }
+
+  function captureImageSafely(video: HTMLVideoElement) {
+    try {
+      lastValidImageRef.current = captureMirroredFrame(video);
+    } catch {
+      // Skip this frame's snapshot; the capture can still finish using an
+      // image from an earlier or later valid frame. A thrown error here
+      // must never escape into LandmarkCanvas's animation-frame loop, or
+      // detection stops silently for the rest of the page's lifetime.
+    }
   }
 
   function finalizeCapture() {
@@ -114,36 +146,56 @@ export default function SmileCapturePage() {
   }
 
   function handleFrame(result: FaceLandmarkerResult) {
-    faceGuideRef.current?.updateFrame(result);
+    const currentGuideStatus = faceGuideRef.current?.updateFrame(result) ?? null;
+    if (currentGuideStatus) {
+      faceGuideStatusRef.current = currentGuideStatus;
+    }
 
-    if (captureTargetRef.current === null) return;
+    const target = captureTargetRef.current;
+    if (target === null) return;
 
     const video = videoRef.current;
     if (!video) return;
 
     const elapsedMs = performance.now() - captureStartRef.current;
-    const landmarks = result.faceLandmarks[0];
-    const guideStatus = faceGuideStatusRef.current;
+    const rawLandmarks = result.faceLandmarks[0];
+    const landmarks: Point3D[] = rawLandmarks
+      ? rawLandmarks.map(({ x, y, z }) => ({ x, y, z }))
+      : [];
+    const guideStatus = currentGuideStatus ?? faceGuideStatusRef.current;
     const guideOk = guideStatus?.ok === true;
 
-    if (guideOk) {
-      try {
-        lastValidImageRef.current = captureMirroredFrame(video);
-      } catch {
-        // Skip this frame's snapshot; the capture can still finish using an
-        // image from an earlier or later valid frame. A thrown error here
-        // must never escape into LandmarkCanvas's animation-frame loop, or
-        // detection stops silently for the rest of the page's lifetime.
+    if (guideOk && landmarks.length > 0) {
+      if (target === "baseline") {
+        captureImageSafely(video);
+      } else if (baselineFeaturesRef.current) {
+        const metrics = computeFrameSmileMetrics(
+          landmarks,
+          baselineFeaturesRef.current
+        );
+        const provisional =
+          metrics.mouthCornerScore +
+          metrics.mouthWidthScore +
+          metrics.cheekEyeScore +
+          metrics.symmetryScore;
+        if (provisional > bestProvisionalScoreRef.current) {
+          bestProvisionalScoreRef.current = provisional;
+          captureImageSafely(video);
+        }
       }
     }
 
     captureBufferRef.current.push({
       timestampMs: elapsedMs,
-      landmarks: landmarks ? landmarks.map(({ x, y, z }) => ({ x, y, z })) : [],
+      landmarks,
       faceDetected: guideStatus?.faceDetected ?? false,
       landmarksOk: guideStatus?.landmarksOk ?? false,
       guideOk,
     });
+
+    if (elapsedMs >= CAPTURE_DURATION_MS) {
+      finalizeCapture();
+    }
   }
 
   function requestBaselineCapture() {
@@ -179,19 +231,28 @@ export default function SmileCapturePage() {
   }
 
   function requestSmileCapture() {
-    if (!faceGuideStatusRef.current?.ok) return;
+    if (!faceGuideStatusRef.current?.ok || !baselineCapture) return;
+    try {
+      baselineFeaturesRef.current = computeBaselineFeatures(baselineCapture);
+    } catch (err) {
+      setCaptureError(
+        err instanceof Error ? err.message : "基準顔の特徴量を計算できませんでした"
+      );
+      return;
+    }
     setCaptureError(null);
     setSmileAttempt((n) => n + 1);
     setStage("smile-countdown");
   }
 
   function beginSmileCapturing() {
-    if (!faceGuideStatusRef.current?.ok) {
+    if (!faceGuideStatusRef.current?.ok || !baselineFeaturesRef.current) {
       cancelCapture("顔を枠の中に入れてから撮影してください", "baseline-done");
       return;
     }
     captureBufferRef.current = [];
     lastValidImageRef.current = null;
+    bestProvisionalScoreRef.current = -Infinity;
     captureStartRef.current = performance.now();
     captureTargetRef.current = "smile";
     captureTimeoutRef.current = window.setTimeout(
@@ -205,13 +266,31 @@ export default function SmileCapturePage() {
     clearCaptureTimeout();
     captureTargetRef.current = null;
     setSmileCapture(null);
+    setScoreResult(null);
+    setAdviceMessages([]);
     setCaptureError(null);
     setSmileAttempt((n) => n + 1);
     setStage("smile-countdown");
   }
 
-  function confirmSmile() {
-    setStage("done");
+  async function confirmSmile() {
+    if (!baselineFeaturesRef.current || !smileCapture) return;
+    setCaptureError(null);
+    setStage("scoring");
+    try {
+      const result = await computeSmileScore(
+        baselineFeaturesRef.current,
+        smileCapture
+      );
+      setScoreResult(result);
+      setAdviceMessages(generateAdvice(result));
+      setStage("done");
+    } catch (err) {
+      setCaptureError(
+        err instanceof Error ? err.message : "採点に失敗しました"
+      );
+      setStage("smile-review");
+    }
   }
 
   return (
@@ -318,32 +397,26 @@ export default function SmileCapturePage() {
         </div>
       )}
 
-      {stage === "done" && baselineCapture && smileCapture && (
+      {stage === "scoring" && (
+        <p className="capture-indicator">● 採点しています...</p>
+      )}
+
+      {stage === "done" && scoreResult && smileCapture && (
         <div className="capture-review">
-          <p className="capture-success">
-            撮影が完了しました。Smile Scoreの算出は今後のフェーズで実装予定です。
-          </p>
-          <div className="capture-done-images">
-            <div>
-              <p>基準顔</p>
-              <img
-                src={baselineCapture.representativeImageDataUrl}
-                alt="基準顔"
-                className="capture-review-image"
-              />
-            </div>
-            <div>
-              <p>笑顔</p>
-              <img
-                src={smileCapture.representativeImageDataUrl}
-                alt="笑顔"
-                className="capture-review-image"
-              />
-            </div>
+          <ScoreBreakdown scores={scoreResult} />
+          <div className="advice-box">
+            {adviceMessages.map((message) => (
+              <p key={message}>{message}</p>
+            ))}
           </div>
+          <img
+            src={smileCapture.representativeImageDataUrl}
+            alt="採点に使用した笑顔画像"
+            className="capture-review-image"
+          />
           <div className="capture-controls">
             <button type="button" onClick={retakeSmile}>
-              笑顔を撮り直す
+              もう一度採点する
             </button>
           </div>
         </div>

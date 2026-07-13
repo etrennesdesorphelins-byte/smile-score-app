@@ -1,4 +1,4 @@
-import { FaceLandmarker, type NormalizedLandmark } from "@mediapipe/tasks-vision";
+import { FaceLandmarker } from "@mediapipe/tasks-vision";
 
 export type Point3D = {
   x: number;
@@ -51,7 +51,7 @@ export function calculateDistance(a: Point3D, b: Point3D): number {
 }
 
 function averagePoint(
-  landmarks: readonly NormalizedLandmark[],
+  landmarks: readonly Point3D[],
   indices: readonly number[]
 ): Point3D {
   let x = 0;
@@ -68,7 +68,7 @@ function averagePoint(
 }
 
 function boundingBox(
-  landmarks: readonly NormalizedLandmark[],
+  landmarks: readonly Point3D[],
   indices: readonly number[]
 ): FaceBoxMetrics {
   let minX = Infinity;
@@ -95,13 +95,13 @@ function boundingBox(
 }
 
 export function getFaceBoxMetrics(
-  landmarks: readonly NormalizedLandmark[]
+  landmarks: readonly Point3D[]
 ): FaceBoxMetrics {
   return boundingBox(landmarks, FACE_OVAL_INDICES);
 }
 
 export function getEyeMetrics(
-  landmarks: readonly NormalizedLandmark[]
+  landmarks: readonly Point3D[]
 ): EyeMetrics {
   return {
     leftCenter: averagePoint(landmarks, LEFT_EYE_INDICES),
@@ -109,12 +109,29 @@ export function getEyeMetrics(
   };
 }
 
+// Bounding box of each eye's landmark set. `.height` is the vertical eye
+// opening (eyelid narrowing when smiling); `.maxY` is the lower-eyelid
+// position, used as a cheek-lift proxy since MediaPipe has no dedicated
+// "cheek" connector set to derive indices from.
+export function getEyeBoxMetrics(
+  landmarks: readonly Point3D[]
+): { left: FaceBoxMetrics; right: FaceBoxMetrics } {
+  return {
+    left: boundingBox(landmarks, LEFT_EYE_INDICES),
+    right: boundingBox(landmarks, RIGHT_EYE_INDICES),
+  };
+}
+
+export function getMouthBoxMetrics(landmarks: readonly Point3D[]): FaceBoxMetrics {
+  return boundingBox(landmarks, MOUTH_INDICES);
+}
+
 // MediaPipe's "left"/"right" naming is subject-relative (the subject's own
 // left/right), which in an unmirrored camera image corresponds to the
 // larger/smaller x coordinate respectively — consistent with LEFT_EYE /
 // RIGHT_EYE sitting on the larger-x / smaller-x side of a frontal face.
 export function getMouthCornerPoints(
-  landmarks: readonly NormalizedLandmark[]
+  landmarks: readonly Point3D[]
 ): { left: Point3D; right: Point3D } {
   let left = landmarks[MOUTH_INDICES[0]];
   let right = landmarks[MOUTH_INDICES[0]];

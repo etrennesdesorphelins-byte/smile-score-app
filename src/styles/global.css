@@ -210,3 +210,54 @@ body {
 .back-link {
   margin-top: 24px;
 }
+
+.score-breakdown {
+  margin-top: 8px;
+  padding: 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.score-total {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.score-caption {
+  color: #666;
+  font-size: 0.9rem;
+  margin-top: 4px;
+}
+
+.score-list {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.score-list li {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 4px;
+}
+
+.advice-box {
+  margin-top: 16px;
+  padding: 16px;
+  background: #f4f9f4;
+  border-radius: 8px;
+  text-align: left;
+}
+
+.advice-box p {
+  margin: 0 0 8px;
+}
+
+.advice-box p:last-child {
+  margin-bottom: 0;
+}

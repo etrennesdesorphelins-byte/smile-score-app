@@ -18,7 +18,7 @@ export type FaceGuideStatus = {
 };
 
 export type FaceGuideHandle = {
-  updateFrame: (result: FaceLandmarkerResult) => void;
+  updateFrame: (result: FaceLandmarkerResult) => FaceGuideStatus;
 };
 
 type FaceGuideOverlayProps = {
@@ -118,6 +118,7 @@ const FaceGuideOverlay = forwardRef<FaceGuideHandle, FaceGuideOverlayProps>(
         const next = evaluateFrame(result, detectionStreakRef);
         setStatus(next);
         onStatusChange?.(next);
+        return next;
       },
     }));
 
