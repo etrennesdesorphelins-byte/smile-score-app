@@ -8,7 +8,6 @@ import {
   useEffect,
   useImperativeHandle,
   useRef,
-  useState,
   type RefObject,
 } from "react";
 import {
@@ -28,8 +27,6 @@ type LandmarkCanvasProps = {
 const LandmarkCanvas = forwardRef<HTMLCanvasElement, LandmarkCanvasProps>(
   function LandmarkCanvas({ videoRef, onFrame, onStatusChange }, ref) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const [status, setStatus] = useState<LandmarkDetectionStatus>("loading");
-    const [faceDetected, setFaceDetected] = useState(false);
 
     useImperativeHandle(ref, () => canvasRef.current as HTMLCanvasElement);
 
@@ -42,11 +39,6 @@ const LandmarkCanvas = forwardRef<HTMLCanvasElement, LandmarkCanvasProps>(
       let rafId = 0;
       let cancelled = false;
       let lastTimestampMs = -1;
-
-      function setDetectionStatus(next: LandmarkDetectionStatus) {
-        setStatus(next);
-        onStatusChangeRef.current?.(next);
-      }
 
       function loop(landmarker: FaceLandmarker) {
         if (cancelled) return;
@@ -71,7 +63,6 @@ const LandmarkCanvas = forwardRef<HTMLCanvasElement, LandmarkCanvasProps>(
 
           const result = detectFace(landmarker, video, timestampMs);
           drawResult(canvas, result);
-          setFaceDetected((result.faceLandmarks?.length ?? 0) > 0);
           onFrameRef.current?.(result);
         }
 
@@ -81,11 +72,11 @@ const LandmarkCanvas = forwardRef<HTMLCanvasElement, LandmarkCanvasProps>(
       initializeFaceLandmarker()
         .then((landmarker) => {
           if (cancelled) return;
-          setDetectionStatus("ready");
+          onStatusChangeRef.current?.("ready");
           rafId = requestAnimationFrame(() => loop(landmarker));
         })
         .catch(() => {
-          if (!cancelled) setDetectionStatus("error");
+          if (!cancelled) onStatusChangeRef.current?.("error");
         });
 
       return () => {
@@ -95,21 +86,7 @@ const LandmarkCanvas = forwardRef<HTMLCanvasElement, LandmarkCanvasProps>(
       };
     }, [videoRef]);
 
-    return (
-      <>
-        <canvas ref={canvasRef} className="landmark-canvas" />
-        {status === "error" && (
-          <p className="landmark-status landmark-status-error">
-            顔ランドマークモデルの読み込みに失敗しました。ネットワーク接続を確認してください。
-          </p>
-        )}
-        {status === "ready" && (
-          <p className="landmark-status">
-            {faceDetected ? "顔を検出しています" : "顔が検出されていません"}
-          </p>
-        )}
-      </>
-    );
+    return <canvas ref={canvasRef} className="landmark-canvas" />;
   }
 );
 

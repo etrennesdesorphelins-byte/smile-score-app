@@ -2,6 +2,10 @@ import type { FaceLandmarkerResult } from "@mediapipe/tasks-vision";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import CameraView from "../components/CameraView";
+import FaceGuideOverlay, {
+  type FaceGuideHandle,
+  type FaceGuideStatus,
+} from "../components/FaceGuideOverlay";
 import LandmarkCanvas, {
   type LandmarkDetectionStatus,
 } from "../components/LandmarkCanvas";
@@ -23,6 +27,7 @@ type DownloadLinks = {
 export default function LandmarkPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const faceGuideRef = useRef<FaceGuideHandle>(null);
   const framesRef = useRef<LandmarkFrameRecord[]>([]);
   const frameCounterRef = useRef(0);
   const recordingStartRef = useRef(0);
@@ -30,6 +35,9 @@ export default function LandmarkPage() {
 
   const [detectionStatus, setDetectionStatus] =
     useState<LandmarkDetectionStatus>("loading");
+  const [faceGuideStatus, setFaceGuideStatus] = useState<FaceGuideStatus | null>(
+    null
+  );
   const [isRecording, setIsRecording] = useState(false);
   const [hasCapturedFrame, setHasCapturedFrame] = useState(false);
   const [recordingError, setRecordingError] = useState<string | null>(null);
@@ -55,6 +63,7 @@ export default function LandmarkPage() {
 
   function handleFrame(result: FaceLandmarkerResult) {
     if (!hasCapturedFrame) setHasCapturedFrame(true);
+    faceGuideRef.current?.updateFrame(result);
 
     if (!isRecording) return;
     const video = videoRef.current;
@@ -130,20 +139,42 @@ export default function LandmarkPage() {
   }
 
   const canRecord =
-    detectionStatus === "ready" && hasCapturedFrame && canRecordCanvas();
+    detectionStatus === "ready" &&
+    hasCapturedFrame &&
+    faceGuideStatus?.ok === true &&
+    canRecordCanvas();
 
   return (
     <div className="app-shell">
       <h1>Smile Score Demo</h1>
       <p>顔ランドマーク表示・録画</p>
       <div className="camera-stage">
-        <CameraView ref={videoRef} />
-        <LandmarkCanvas
-          ref={canvasRef}
-          videoRef={videoRef}
-          onFrame={handleFrame}
-          onStatusChange={setDetectionStatus}
-        />
+        <div className="camera-frame">
+          <CameraView ref={videoRef} />
+          <LandmarkCanvas
+            ref={canvasRef}
+            videoRef={videoRef}
+            onFrame={handleFrame}
+            onStatusChange={setDetectionStatus}
+          />
+          <FaceGuideOverlay
+            ref={faceGuideRef}
+            onStatusChange={setFaceGuideStatus}
+          />
+        </div>
+        {detectionStatus === "loading" && (
+          <p className="landmark-status">
+            顔ランドマークモデルを読み込んでいます...
+          </p>
+        )}
+        {detectionStatus === "error" && (
+          <p className="landmark-status landmark-status-error">
+            顔ランドマークモデルの読み込みに失敗しました。ネットワーク接続を確認してください。
+          </p>
+        )}
+        {faceGuideStatus && (
+          <p className="face-guide-message">{faceGuideStatus.messages[0]}</p>
+        )}
       </div>
 
       {isRecording && <p className="recording-indicator">● 録画中</p>}
