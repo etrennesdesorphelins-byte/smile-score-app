@@ -30,6 +30,7 @@ type CaptureStage =
   | "baseline-countdown"
   | "baseline-capturing"
   | "baseline-done"
+  | "smile-guide"
   | "smile-countdown"
   | "smile-capturing"
   | "smile-review"
@@ -229,8 +230,8 @@ export default function SmileCapturePage() {
     setStage("baseline-countdown");
   }
 
-  function requestSmileCapture() {
-    if (!faceGuideStatusRef.current?.ok || !baselineCapture) return;
+  function proceedToSmileGuide() {
+    if (!baselineCapture) return;
     try {
       baselineFeaturesRef.current = computeBaselineFeatures(baselineCapture);
     } catch (err) {
@@ -240,13 +241,19 @@ export default function SmileCapturePage() {
       return;
     }
     setCaptureError(null);
+    setStage("smile-guide");
+  }
+
+  function requestSmileCapture() {
+    if (!faceGuideStatusRef.current?.ok || !baselineFeaturesRef.current) return;
+    setCaptureError(null);
     setSmileAttempt((n) => n + 1);
     setStage("smile-countdown");
   }
 
   function beginSmileCapturing() {
     if (!faceGuideStatusRef.current?.ok || !baselineFeaturesRef.current) {
-      cancelCapture("顔を枠の中に入れてから撮影してください", "baseline-done");
+      cancelCapture("顔を枠の中に入れてから撮影してください", "smile-guide");
       return;
     }
     captureBufferRef.current = [];
@@ -371,14 +378,26 @@ export default function SmileCapturePage() {
             <button type="button" onClick={retakeBaseline}>
               基準顔を撮り直す
             </button>
-            <button
-              type="button"
-              onClick={requestSmileCapture}
-              disabled={!faceGuideStatus?.ok}
-            >
-              笑顔を採点
+            <button type="button" onClick={proceedToSmileGuide}>
+              笑顔の採点に進む
             </button>
           </div>
+        </div>
+      )}
+
+      {stage === "smile-guide" && (
+        <div className="capture-controls">
+          <p>顔をガイド枠に入れて「笑顔を採点」を押してください</p>
+          <button type="button" onClick={retakeBaseline}>
+            基準顔を撮り直す
+          </button>
+          <button
+            type="button"
+            onClick={requestSmileCapture}
+            disabled={!faceGuideStatus?.ok}
+          >
+            笑顔を採点
+          </button>
         </div>
       )}
 
