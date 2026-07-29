@@ -20,9 +20,10 @@ export default function ResultPage() {
   const navigate = useNavigate();
   const state = location.state as ResultLocationState | null;
 
-  const [landmarkImageUrl, setLandmarkImageUrl] = useState<string | null>(
+  const [baselineImageUrl, setBaselineImageUrl] = useState<string | null>(
     null
   );
+  const [smileImageUrl, setSmileImageUrl] = useState<string | null>(null);
   const [consentStatus, setConsentStatus] = useState<ConsentStatus>("pending");
   const [isRegistering, setIsRegistering] = useState(false);
   const [registerError, setRegisterError] = useState<string | null>(null);
@@ -31,11 +32,21 @@ export default function ResultPage() {
     if (!state) return;
     let cancelled = false;
     renderLandmarkOverlayImage(
+      state.baselineImageDataUrl,
+      state.baselineLandmarks
+    )
+      .then((url) => {
+        if (!cancelled) setBaselineImageUrl(url);
+      })
+      .catch(() => {
+        // Non-critical: the plain photo is still shown either way.
+      });
+    renderLandmarkOverlayImage(
       state.imageDataUrl,
       state.scoreResult.representativeLandmarks
     )
       .then((url) => {
-        if (!cancelled) setLandmarkImageUrl(url);
+        if (!cancelled) setSmileImageUrl(url);
       })
       .catch(() => {
         // Non-critical: the plain photo is still shown either way.
@@ -97,24 +108,25 @@ export default function ResultPage() {
       <h1>Smile Score Demo</h1>
       <p>採点結果</p>
 
-      <ScoreBreakdown scores={state.scoreResult} />
-
-      <div className="result-images">
-        <div>
-          <p>元画像</p>
+      <div className="result-columns">
+        <div className="result-column">
+          <p>基準顔</p>
           <img
-            src={state.imageDataUrl}
-            alt="元画像"
+            src={baselineImageUrl ?? state.baselineImageDataUrl}
+            alt="基準顔"
             className="capture-review-image"
           />
         </div>
-        <div>
-          <p>ランドマーク付き画像</p>
+        <div className="result-column">
+          <p>笑顔</p>
           <img
-            src={landmarkImageUrl ?? state.imageDataUrl}
-            alt="ランドマーク付き画像"
+            src={smileImageUrl ?? state.imageDataUrl}
+            alt="笑顔"
             className="capture-review-image"
           />
+        </div>
+        <div className="result-column">
+          <ScoreBreakdown scores={state.scoreResult} />
         </div>
       </div>
       <p className="result-caption">

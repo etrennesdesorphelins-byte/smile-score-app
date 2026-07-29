@@ -29,6 +29,7 @@ export type BaselineFeatures = {
   eyeHeightRight: number;
   lowerEyelidYLeft: number;
   lowerEyelidYRight: number;
+  representativeLandmarks: Point3D[];
 };
 
 type FrameSmileMetrics = {
@@ -122,6 +123,9 @@ export function computeBaselineFeatures(
     eyeHeightRight: median(eyeHeightRights),
     lowerEyelidYLeft: median(lowerEyelidYLefts),
     lowerEyelidYRight: median(lowerEyelidYRights),
+    // The capture pipeline overwrites its representative image on every valid
+    // frame, so the last valid frame's landmarks are the ones matching that image.
+    representativeLandmarks: validFrames[validFrames.length - 1].landmarks,
   };
 }
 

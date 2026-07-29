@@ -5,6 +5,8 @@ export type ResultLocationState = {
   scoreResult: SmileScoreResult;
   adviceMessages: string[];
   imageDataUrl: string;
+  baselineImageDataUrl: string;
+  baselineLandmarks: Point3D[];
 };
 
 export type CaptureFrame = {

@@ -1,3 +1,4 @@
+import { getScoreColor } from "../lib/scoreColor";
 import type { SmileScoreResult } from "../lib/scoring";
 
 type ScoreBreakdownProps = {
@@ -18,22 +19,50 @@ const ITEMS: { key: ScoreItemKey; label: string; max: number }[] = [
   { key: "teeth", label: "上歯露出", max: 5 },
 ];
 
+const TOTAL_MAX = ITEMS.reduce((sum, item) => sum + item.max, 0);
+
 export default function ScoreBreakdown({ scores }: ScoreBreakdownProps) {
+  const totalColor = getScoreColor(scores.total, TOTAL_MAX);
+  const totalPercent = Math.min(100, Math.max(0, (scores.total / TOTAL_MAX) * 100));
+
   return (
     <div className="score-breakdown">
-      <p className="score-total">Smile Score：{scores.total}点</p>
+      <div
+        className="score-ring"
+        style={{
+          backgroundImage: `conic-gradient(${totalColor} ${totalPercent}%, #e5e5e5 ${totalPercent}% 100%)`,
+        }}
+      >
+        <div className="score-ring-inner">
+          <span className="score-ring-value">{scores.total}</span>
+          <span className="score-ring-max">/ {TOTAL_MAX}</span>
+        </div>
+      </div>
       <p className="score-caption">
         今回のカメラ条件で検出された笑顔特徴のスコアです
       </p>
       <ul className="score-list">
-        {ITEMS.map((item) => (
-          <li key={item.key}>
-            <span className="score-item-label">{item.label}</span>
-            <span className="score-item-value">
-              {scores[item.key]} / {item.max}
-            </span>
-          </li>
-        ))}
+        {ITEMS.map((item) => {
+          const value = scores[item.key];
+          const color = getScoreColor(value, item.max);
+          const percent = Math.min(100, Math.max(0, (value / item.max) * 100));
+          return (
+            <li key={item.key}>
+              <div className="score-item-header">
+                <span className="score-item-label">{item.label}</span>
+                <span className="score-item-value">
+                  {value} / {item.max}
+                </span>
+              </div>
+              <div className="score-bar-track">
+                <div
+                  className="score-bar-fill"
+                  style={{ width: `${percent}%`, background: color }}
+                />
+              </div>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

@@ -278,7 +278,7 @@ export default function SmileCapturePage() {
   }
 
   async function confirmSmile() {
-    if (!baselineFeaturesRef.current || !smileCapture) return;
+    if (!baselineFeaturesRef.current || !smileCapture || !baselineCapture) return;
     setCaptureError(null);
     setStage("scoring");
     try {
@@ -290,6 +290,8 @@ export default function SmileCapturePage() {
         scoreResult: result,
         adviceMessages: generateAdvice(result),
         imageDataUrl: smileCapture.representativeImageDataUrl,
+        baselineImageDataUrl: baselineCapture.representativeImageDataUrl,
+        baselineLandmarks: baselineFeaturesRef.current.representativeLandmarks,
       };
       navigate("/result", { state });
     } catch (err) {
