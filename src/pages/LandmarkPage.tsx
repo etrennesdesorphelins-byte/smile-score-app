@@ -2,6 +2,10 @@ import type { FaceLandmarkerResult } from "@mediapipe/tasks-vision";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import CameraView from "../components/CameraView";
+import FaceFigureView, {
+  type FaceFigureStatus,
+  type FaceFigureViewHandle,
+} from "../components/FaceFigureView";
 import FaceGuideOverlay, {
   type FaceGuideHandle,
   type FaceGuideStatus,
@@ -28,6 +32,7 @@ export default function LandmarkPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const faceGuideRef = useRef<FaceGuideHandle>(null);
+  const figureRef = useRef<FaceFigureViewHandle>(null);
   const framesRef = useRef<LandmarkFrameRecord[]>([]);
   const frameCounterRef = useRef(0);
   const recordingStartRef = useRef(0);
@@ -42,6 +47,10 @@ export default function LandmarkPage() {
   const [hasCapturedFrame, setHasCapturedFrame] = useState(false);
   const [recordingError, setRecordingError] = useState<string | null>(null);
   const [downloadLinks, setDownloadLinks] = useState<DownloadLinks | null>(
+    null
+  );
+  const [showFigure, setShowFigure] = useState(false);
+  const [figureStatus, setFigureStatus] = useState<FaceFigureStatus | null>(
     null
   );
 
@@ -64,6 +73,13 @@ export default function LandmarkPage() {
   function handleFrame(result: FaceLandmarkerResult) {
     if (!hasCapturedFrame) setHasCapturedFrame(true);
     faceGuideRef.current?.updateFrame(result);
+
+    if (showFigure) {
+      figureRef.current?.update(
+        result.faceBlendshapes[0]?.categories,
+        result.facialTransformationMatrixes[0]?.data
+      );
+    }
 
     if (!isRecording) return;
     const video = videoRef.current;
@@ -162,6 +178,21 @@ export default function LandmarkPage() {
             onStatusChange={setFaceGuideStatus}
           />
         </div>
+
+        {showFigure && (
+          <div className="figure-panel">
+            <FaceFigureView ref={figureRef} onStatusChange={setFigureStatus} />
+            {figureStatus === "loading" && (
+              <p className="landmark-status">3Dモデルを読み込んでいます...</p>
+            )}
+            {figureStatus === "error" && (
+              <p className="landmark-status landmark-status-error">
+                3Dモデルの読み込みに失敗しました。
+              </p>
+            )}
+          </div>
+        )}
+
         {detectionStatus === "loading" && (
           <p className="landmark-status">
             顔ランドマークモデルを読み込んでいます...
@@ -175,6 +206,17 @@ export default function LandmarkPage() {
         {faceGuideStatus && (
           <p className="face-guide-message">{faceGuideStatus.messages[0]}</p>
         )}
+      </div>
+
+      <div className="figure-toggle">
+        <label>
+          <input
+            type="checkbox"
+            checked={showFigure}
+            onChange={(e) => setShowFigure(e.target.checked)}
+          />
+          3Dフィギュアを表示（端末の負荷が高くなる場合があります）
+        </label>
       </div>
 
       {isRecording && <p className="recording-indicator">● 録画中</p>}

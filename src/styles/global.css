@@ -58,6 +58,25 @@ body {
   font-weight: 600;
 }
 
+.figure-toggle {
+  margin-top: 16px;
+  font-size: 0.9rem;
+}
+
+.figure-panel {
+  width: 200px;
+  margin: 16px auto 0;
+}
+
+.figure-canvas {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: #111;
+  border-radius: 8px;
+  /* Mirror to match the mirrored camera preview (.camera-video / .landmark-canvas). */
+  transform: scaleX(-1);
+}
+
 .countdown-overlay {
   position: absolute;
   inset: 0;
