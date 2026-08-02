@@ -27,8 +27,8 @@ type FaceGuideOverlayProps = {
 
 const THRESHOLDS = {
   centerTolerance: 0.15,
-  minFaceWidthRatio: 0.28,
-  maxFaceWidthRatio: 0.65,
+  minFaceWidthRatio: 0.18,
+  maxFaceWidthRatio: 0.7,
   maxRollDegrees: 18,
   maxYawIndex: 0.18,
   requiredConsecutiveDetectFrames: 5,
